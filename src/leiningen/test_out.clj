@@ -31,14 +31,14 @@
     `(do
      (try
       ~(require-all-test-namespaces project)
-      (with-open [file-stream# (java.io.FileWriter. ~filename)] 
+      (let [result# (with-open [file-stream# (java.io.FileWriter. ~filename)] 
         (binding [~'*out* file-stream#
                   clojure.test/*test-out* file-stream#]
           (~format-fn (clojure.test/run-all-tests))
           (catch Throwable e#
             (clojure.test/is false (format "Uncaught exception: %s" e#))
-            (System/exit 1)))))
-     (System/exit 0))))
+            (System/exit 1))))]
+        (System/exit (if (clojure.test/successful? result#) 0 1)))))))
 
 (defn test-out
   "runs all tests, and outputs results to a file in junitXML or TAP format.
@@ -48,12 +48,11 @@ Usage: lein test-out <format> <filename>
 By default, outputs junit XML to testreports.xml."
   [project & [format filename]]
   (let [filename (or filename "testreports.xml")
-        forms [(require-clojure-test-form)
-               (run-form project format filename)]]
+        reqform (require-clojure-test-form)
+        runform (run-form project format filename)]
     (eval-in-project
      project
-     (second forms) ;; form
-     nil ;; handler
-     nil ;; skip-auto-compile
-     (first forms) ;; init
-     )))
+     runform
+     nil
+     nil
+     reqform)))

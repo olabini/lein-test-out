@@ -1,0 +1,5 @@
+#!/bin/sh
+
+lein jar
+lein pom
+mvn install:install-file -DgroupId=lein-test-out2 -DartifactId=lein-test-out2 -Dversion=0.0.1 -Dpackaging=jar -Dfile=lein-test-out2-0.0.1.jar -DpomFile=pom.xml
